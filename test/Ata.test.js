@@ -113,6 +113,19 @@ describe('createValidator / validate', () => {
 			expect(err.message).toContain('name')
 		}
 	})
+
+	test('is strict by default: a numeric string is rejected for a number schema', () => {
+		const numSchema = defineSchema({ port: number() })
+		expect(() => validate(numSchema, { port: '4040' })).toThrow(PrincipiaError)
+	})
+
+	test('options are forwarded to the underlying Validator (coerceTypes)', () => {
+		// Regression test: process.env values are always strings (e.g. `PORT=4040` is
+		// `"4040"`, not `4040`) — env-parsing callers need this to avoid rejecting every
+		// explicitly-set numeric/boolean variable. See apps/*/env.js in principia-nano-services.
+		const numSchema = defineSchema({ port: number() })
+		expect(validate(numSchema, { port: '4040' }, { coerceTypes: true })).toEqual({ port: 4040 })
+	})
 })
 
 describe('schema builders', () => {
@@ -146,9 +159,12 @@ describe('schema builders', () => {
 		expect(logFile()).toEqual({ type: 'string', default: './tmp/moleculer.log' })
 	})
 
-	test('nodeEnv defaults to local', () => {
+	test('nodeEnv defaults to local and allows test', () => {
+		// Regression test: bun test (and most JS test runners) set NODE_ENV=test
+		// automatically. Omitting it from the enum would make it impossible for any app
+		// validating process.env at import time to run its own test suite.
 		expect(nodeEnv()).toEqual({
-			enum: ['production', 'development', 'local'],
+			enum: ['production', 'development', 'local', 'test'],
 			default: 'local',
 		})
 	})

@@ -3,7 +3,7 @@ import { randomUUID as uuid } from 'node:crypto'
 import { TRANS } from '@principia/classification'
 
 import { PrincipiaError, ErrorCreator, BaseErrors } from './lib/Errors.js'
-import { createEnv, createConnectorEnv } from './lib/Env.js'
+import { createEnv } from './lib/Env.js'
 
 export * from './lib/Ata.js'
 
@@ -11,7 +11,7 @@ export * from './lib/Codogram.js'
 
 export * from './lib/Defaulter.js'
 
-export { PrincipiaError, ErrorCreator, BaseErrors, createEnv, createConnectorEnv }
+export { PrincipiaError, ErrorCreator, BaseErrors, createEnv }
 
 /** Role tag Moleculer assigns to every Principia microservice. */
 export const MOLECULER_SERVICE_ROLE = 'microservice'
