@@ -1,6 +1,6 @@
 import { randomUUID as uuid } from 'node:crypto'
 
-import { TRANS } from '@principia/classification'
+import { TRANS } from '@empyria/classification'
 
 import { PrincipiaError, ErrorCreator, BaseErrors } from './lib/Errors.js'
 import { createEnv } from './lib/Env.js'

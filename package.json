@@ -1,12 +1,12 @@
 {
-	"name": "@principia/common",
+	"name": "@empyria/common",
 	"version": "0.1.0",
 	"description": "Shared backend goodies for Principia",
 	"license": "MIT",
 	"author": "Imre Fazekas <imre.fazekas@icloud.com>",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/imrefazekas/principia-common.git"
+		"url": "git+https://github.com/imrefazekas/empyria-common.git"
 	},
 	"type": "module",
 	"main": "./index.js",
@@ -19,7 +19,7 @@
 		"test:watch": "bun test --watch"
 	},
 	"dependencies": {
-		"@principia/classification": "git@github.com:imrefazekas/principia-classification.git",
+		"@empyria/classification": "0.1.0",
 		"ata-validator": "1.6.1",
 		"clerobee": "1.0.8",
 		"ms": "2.1.3"

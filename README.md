@@ -1,4 +1,4 @@
-# @principia/common
+# @empyria/common
 
 Shared backend services for higher-level components in **Principia**, a nanoservice
 framework built primarily on Bun: environment variable schemas, error definitions,
@@ -10,20 +10,20 @@ validation).
 - Bun `>=1.4.0` or Node.js `>=26`
 - Plain ESM, no build step, no TypeScript
 
-Both requirements come from [@principia/classification](https://github.com/imrefazekas/principia-classification),
+Both requirements come from [@empyria/classification](https://github.com/imrefazekas/empyria-classification),
 which this package depends on and which uses the native `Temporal` global for all
 date/time handling.
 
 ## Install
 
 ```bash
-bun add @principia/common
+bun add @empyria/common
 ```
 
 ## Usage
 
 ```js
-import { createEnv, BaseErrors, generateCodogram, validate, string } from '@principia/common'
+import { createEnv, BaseErrors, generateCodogram, validate, string } from '@empyria/common'
 
 const envSchema = createEnv({ API_KEY: string() })
 
@@ -36,7 +36,7 @@ Everything is re-exported from the package root via [index.js](./index.js). Indi
 modules under `lib/` can also be imported directly if you only need one:
 
 ```js
-import { defineSchema } from '@principia/common/lib/Ata.js'
+import { defineSchema } from '@empyria/common/lib/Ata.js'
 ```
 
 ## Modules

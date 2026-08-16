@@ -122,7 +122,7 @@ describe('createValidator / validate', () => {
 	test('options are forwarded to the underlying Validator (coerceTypes)', () => {
 		// Regression test: process.env values are always strings (e.g. `PORT=4040` is
 		// `"4040"`, not `4040`) — env-parsing callers need this to avoid rejecting every
-		// explicitly-set numeric/boolean variable. See apps/*/env.js in principia-nano-services.
+		// explicitly-set numeric/boolean variable. See apps/*/env.js in empyria-nano-services.
 		const numSchema = defineSchema({ port: number() })
 		expect(validate(numSchema, { port: '4040' }, { coerceTypes: true })).toEqual({ port: 4040 })
 	})

@@ -7,7 +7,7 @@ Codogram (SMS/TOTP-style challenge codes), and Ata (JSON schema + validation).
 ## Runtime
 
 - Requires Bun `>=1.4.0` or Node.js `>=26`, inherited from
-  [@principia/classification](https://github.com/imrefazekas/principia-classification)'s use of
+  [@empyria/classification](https://github.com/imrefazekas/empyria-classification)'s use of
   native `Temporal`. See that repo's `AGENTS.md` — it's a **git dependency**, so this package
   only sees its pushed commits, not local working-tree changes.
 - Plain ESM, no TypeScript, no build step.
