@@ -2,7 +2,7 @@ import { randomUUID as uuid } from 'node:crypto'
 
 import { TRANS } from '@empyria/classification'
 
-import { PrincipiaError, ErrorCreator, BaseErrors } from './lib/Errors.js'
+import { EmpyriaError, ErrorCreator, BaseErrors } from './lib/Errors.js'
 import { createEnv } from './lib/Env.js'
 
 export * from './lib/Ata.js'
@@ -11,17 +11,17 @@ export * from './lib/Codogram.js'
 
 export * from './lib/Defaulter.js'
 
-export { PrincipiaError, ErrorCreator, BaseErrors, createEnv }
+export { EmpyriaError, ErrorCreator, BaseErrors, createEnv }
 
-/** Role tag Moleculer assigns to every Principia microservice. */
+/** Role tag Moleculer assigns to every Empyria microservice. */
 export const MOLECULER_SERVICE_ROLE = 'microservice'
 
 /** The federation's own actor/federation ID, used for system-originated calls. */
-export const PRINCIPIA_FEDERATION_ID =
-	process.env.PRINCIPIA_FEDERATION_ID ?? '563ac2a1-3fe3-4c5f-b20f-6f33e5cbd680'
+export const EMPYRIA_FEDERATION_ID =
+	process.env.EMPYRIA_FEDERATION_ID ?? '563ac2a1-3fe3-4c5f-b20f-6f33e5cbd680'
 
 /**
- * Builds a Moleculer call-context `meta` object carrying Principia's actor/tracing fields.
+ * Builds a Moleculer call-context `meta` object carrying Empyria's actor/tracing fields.
  * @param {Object} params
  * @param {string} params.actor - ID of the user/service making the call.
  * @param {string} params.federation - Federation the call belongs to.
@@ -45,7 +45,7 @@ export function moleculerMeta({ actor, federation, flowID, processID, role, toke
 }
 
 /**
- * Builds a {@link moleculerMeta} object for a system-originated (Principia-as-actor) call,
+ * Builds a {@link moleculerMeta} object for a system-originated (Empyria-as-actor) call,
  * generating a `flowID`/`processID` when not supplied.
  * @param {Object} params
  * @param {string} [params.flowID] - Flow correlation ID; a new UUID is generated if omitted.
@@ -53,10 +53,10 @@ export function moleculerMeta({ actor, federation, flowID, processID, role, toke
  * @param {string} params.tokenKey - Auth token key for the call.
  * @returns {ReturnType<typeof moleculerMeta>}
  */
-export function moleculerPrincipiaMeta({ flowID, processID, tokenKey }) {
+export function moleculerEmpyriaMeta({ flowID, processID, tokenKey }) {
 	return moleculerMeta({
-		actor: PRINCIPIA_FEDERATION_ID,
-		federation: PRINCIPIA_FEDERATION_ID,
+		actor: EMPYRIA_FEDERATION_ID,
+		federation: EMPYRIA_FEDERATION_ID,
 		flowID: flowID ?? uuid(),
 		processID: processID ?? uuid(),
 		role: MOLECULER_SERVICE_ROLE,
@@ -88,12 +88,12 @@ export function workflowId(workflow) {
  * Parses a workflow ID (as produced by {@link workflowId}) back into its service/handler.
  * @param {string} workflowId - A `"SERVICE:HANDLER:<uuid>"`-shaped ID.
  * @returns {{service: string, handler: string}}
- * @throws {PrincipiaError} If `workflowId` doesn't have at least three `:`-separated components.
+ * @throws {EmpyriaError} If `workflowId` doesn't have at least three `:`-separated components.
  */
 export const identifyWorkflow = (workflowId) => {
 	const components = workflowId?.split(':')
 	if (!components || components.length < 3) {
-		throw new PrincipiaError('Invalid workflow ID format')
+		throw new EmpyriaError('Invalid workflow ID format')
 	}
 	return {
 		service: components[0],

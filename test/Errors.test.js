@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'bun:test'
-import { PrincipiaError, ErrorCreator, BaseErrors } from '../lib/Errors.js'
+import { EmpyriaError, ErrorCreator, BaseErrors } from '../lib/Errors.js'
 
-describe('PrincipiaError', () => {
+describe('EmpyriaError', () => {
 	test('carries message, errorName, and errorCode', () => {
-		const err = new PrincipiaError('Something broke', 'SomeError', 12345)
+		const err = new EmpyriaError('Something broke', 'SomeError', 12345)
 		expect(err).toBeInstanceOf(Error)
 		expect(err.message).toBe('Something broke')
 		expect(err.errorName).toBe('SomeError')
@@ -20,7 +20,7 @@ describe('ErrorCreator', () => {
 			message: 'Value {value} is bad',
 		})
 		const err = factory({ value: 42 })
-		expect(err).toBeInstanceOf(PrincipiaError)
+		expect(err).toBeInstanceOf(EmpyriaError)
 		expect(err.message).toBe('Value 42 is bad')
 		expect(err.errorName).toBe('Custom')
 		expect(err.errorCode).toBe(1)

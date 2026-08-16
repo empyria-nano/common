@@ -22,7 +22,7 @@ import {
 	renderCompact,
 	renderJSON,
 } from '../lib/Ata.js'
-import { PrincipiaError } from '../lib/Errors.js'
+import { EmpyriaError } from '../lib/Errors.js'
 
 describe('P_EMAIL', () => {
 	const re = new RegExp(`^${P_EMAIL}`, 'i')
@@ -103,12 +103,12 @@ describe('createValidator / validate', () => {
 		expect(validate(schema, { name: 'Bob' })).toEqual({ name: 'Bob' })
 	})
 
-	test('throws a PrincipiaError with a rendered message when invalid', () => {
+	test('throws a EmpyriaError with a rendered message when invalid', () => {
 		try {
 			validate(schema, {})
 			throw new Error('should have thrown')
 		} catch (err) {
-			expect(err).toBeInstanceOf(PrincipiaError)
+			expect(err).toBeInstanceOf(EmpyriaError)
 			expect(err.errorName).toBe('ValidationError')
 			expect(err.message).toContain('name')
 		}
@@ -116,7 +116,7 @@ describe('createValidator / validate', () => {
 
 	test('is strict by default: a numeric string is rejected for a number schema', () => {
 		const numSchema = defineSchema({ port: number() })
-		expect(() => validate(numSchema, { port: '4040' })).toThrow(PrincipiaError)
+		expect(() => validate(numSchema, { port: '4040' })).toThrow(EmpyriaError)
 	})
 
 	test('options are forwarded to the underlying Validator (coerceTypes)', () => {

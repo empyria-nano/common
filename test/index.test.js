@@ -1,13 +1,13 @@
 import { describe, test, expect } from 'bun:test'
 import {
 	MOLECULER_SERVICE_ROLE,
-	PRINCIPIA_FEDERATION_ID,
+	EMPYRIA_FEDERATION_ID,
 	moleculerMeta,
-	moleculerPrincipiaMeta,
+	moleculerEmpyriaMeta,
 	workflowName,
 	workflowId,
 	identifyWorkflow,
-	PrincipiaError,
+	EmpyriaError,
 } from '../index.js'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -30,19 +30,19 @@ describe('moleculerMeta', () => {
 	})
 })
 
-describe('moleculerPrincipiaMeta', () => {
+describe('moleculerEmpyriaMeta', () => {
 	test('uses the federation ID as actor/federation and generates missing IDs', () => {
 		// Regression test: this used to call an unimported `uuid()` and throw ReferenceError.
-		const meta = moleculerPrincipiaMeta({ tokenKey: 'key' })
-		expect(meta.user.actor).toBe(PRINCIPIA_FEDERATION_ID)
-		expect(meta.user.federation).toBe(PRINCIPIA_FEDERATION_ID)
+		const meta = moleculerEmpyriaMeta({ tokenKey: 'key' })
+		expect(meta.user.actor).toBe(EMPYRIA_FEDERATION_ID)
+		expect(meta.user.federation).toBe(EMPYRIA_FEDERATION_ID)
 		expect(meta.user.role).toBe(MOLECULER_SERVICE_ROLE)
 		expect(meta.user.flowID).toMatch(UUID_RE)
 		expect(meta.user.processID).toMatch(UUID_RE)
 	})
 
 	test('keeps explicitly provided flowID/processID', () => {
-		const meta = moleculerPrincipiaMeta({ flowID: 'f1', processID: 'p1', tokenKey: 'key' })
+		const meta = moleculerEmpyriaMeta({ flowID: 'f1', processID: 'p1', tokenKey: 'key' })
 		expect(meta.user.flowID).toBe('f1')
 		expect(meta.user.processID).toBe('p1')
 	})
@@ -69,8 +69,8 @@ describe('identifyWorkflow', () => {
 		expect(identifyWorkflow(id)).toEqual({ service: 'SVC', handler: 'H' })
 	})
 
-	test('throws a PrincipiaError for a malformed ID', () => {
-		expect(() => identifyWorkflow('too:short')).toThrow(PrincipiaError)
-		expect(() => identifyWorkflow(undefined)).toThrow(PrincipiaError)
+	test('throws a EmpyriaError for a malformed ID', () => {
+		expect(() => identifyWorkflow('too:short')).toThrow(EmpyriaError)
+		expect(() => identifyWorkflow(undefined)).toThrow(EmpyriaError)
 	})
 })

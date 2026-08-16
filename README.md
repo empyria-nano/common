@@ -1,6 +1,6 @@
 # @empyria/common
 
-Shared backend services for higher-level components in **Principia**, a nanoservice
+Shared backend services for higher-level components in **Empyria**, a nanoservice
 framework built primarily on Bun: environment variable schemas, error definitions,
 Codogram (SMS/TOTP-style challenge codes), and Ata (JSON schema building blocks and
 validation).
@@ -43,9 +43,9 @@ import { defineSchema } from '@empyria/common/lib/Ata.js'
 
 | Module                                 | Purpose                                                                                                                                                                                                                                             |
 | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [index.js](./index.js)                 | Package entry point; re-exports every module below plus Moleculer meta helpers (`moleculerMeta`, `moleculerPrincipiaMeta`) and workflow ID helpers (`workflowName`, `workflowId`, `identifyWorkflow`).                                              |
-| [lib/Errors.js](./lib/Errors.js)       | `PrincipiaError`, the `ErrorCreator` factory, and `BaseErrors` — Principia's catalog of pre-built, templated errors.                                                                                                                                |
-| [lib/Env.js](./lib/Env.js)             | `createEnv` — builds a service's environment-variable JSON schema from Principia-wide defaults.                                                                                                                                                     |
+| [index.js](./index.js)                 | Package entry point; re-exports every module below plus Moleculer meta helpers (`moleculerMeta`, `moleculerEmpyriaMeta`) and workflow ID helpers (`workflowName`, `workflowId`, `identifyWorkflow`).                                                |
+| [lib/Errors.js](./lib/Errors.js)       | `EmpyriaError`, the `ErrorCreator` factory, and `BaseErrors` — Empyria's catalog of pre-built, templated errors.                                                                                                                                    |
+| [lib/Env.js](./lib/Env.js)             | `createEnv` — builds a service's environment-variable JSON schema from Empyria-wide defaults.                                                                                                                                                       |
 | [lib/Ata.js](./lib/Ata.js)             | JSON schema building blocks (`string`, `number`, `bool`, `enumType`, `email`, `password`, `ip4`, `ip6`, ...) and validation (`defineSchema`, `createValidator`, `validate`), built on [ata-validator](https://www.npmjs.com/package/ata-validator). |
 | [lib/Codogram.js](./lib/Codogram.js)   | `generateCodogram` — one-time challenge codes (PIN, alphanumeric, alphabetic) for SMS/TOTP-style verification flows.                                                                                                                                |
 | [lib/Defaulter.js](./lib/Defaulter.js) | `defaultsFromSchema` — builds a fully-populated default object for a JSON schema.                                                                                                                                                                   |

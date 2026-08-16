@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Shared backend services for higher-level components in **Principia**, a nanoservice
+Shared backend services for higher-level components in **Empyria**, a nanoservice
 framework built primarily on Bun: environment variable schemas, error definitions,
 Codogram (SMS/TOTP-style challenge codes), and Ata (JSON schema + validation).
 

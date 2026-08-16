@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 import { generateCodogram, CODOGRAM_LIST, CODOGRAMS } from '../lib/Codogram.js'
-import { PrincipiaError } from '../lib/Errors.js'
+import { EmpyriaError } from '../lib/Errors.js'
 
 describe('generateCodogram', () => {
 	test('PIN: numeric within the default digit range', () => {
@@ -29,7 +29,7 @@ describe('generateCodogram', () => {
 	})
 
 	test('throws for an unrecognised type', () => {
-		expect(() => generateCodogram('nonsense')).toThrow(PrincipiaError)
+		expect(() => generateCodogram('nonsense')).toThrow(EmpyriaError)
 	})
 })
 
