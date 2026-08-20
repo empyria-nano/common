@@ -1,12 +1,12 @@
 {
 	"name": "@empyria/common",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Shared backend goodies for Empyria",
 	"license": "MIT",
 	"author": "Imre Fazekas <imre.fazekas@icloud.com>",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/imrefazekas/empyria-common.git"
+		"url": "git+https://github.com/empyria-nano/common.git"
 	},
 	"type": "module",
 	"main": "./index.js",
@@ -19,14 +19,14 @@
 		"test:watch": "bun test --watch"
 	},
 	"dependencies": {
-		"@empyria/classification": "0.1.1",
-		"ata-validator": "1.6.1",
+		"@empyria/classification": "0.1.2",
+		"ata-validator": "1.6.2",
 		"clerobee": "1.0.8",
 		"ms": "2.1.3"
 	},
 	"devDependencies": {
-		"oxfmt": "0.63.0",
-		"oxlint": "1.78.0"
+		"oxfmt": "0.64.0",
+		"oxlint": "1.79.0"
 	},
 	"engines": {
 		"bun": ">=1.4.0",
