@@ -7,6 +7,8 @@ import {
 	cloneBySchema,
 	defineSchema,
 	validate,
+	createChecker,
+	checkSchema,
 	bool,
 	string,
 	enumType,
@@ -181,5 +183,30 @@ describe('renderCompact / renderJSON re-exports', () => {
 	test('are re-exported from ata-validator', () => {
 		expect(typeof renderCompact).toBe('function')
 		expect(typeof renderJSON).toBe('function')
+	})
+})
+
+describe('createChecker / checkSchema', () => {
+	const schema = defineSchema({ name: string() })
+
+	test('checkSchema returns valid:true and no errors for good input', () => {
+		expect(checkSchema(schema, { name: 'Bob' })).toEqual({ valid: true, errors: [] })
+	})
+
+	test('checkSchema returns valid:false and a non-empty error list for bad input, without throwing', () => {
+		const result = checkSchema(schema, {})
+		expect(result.valid).toBe(false)
+		expect(Array.isArray(result.errors)).toBe(true)
+		expect(result.errors.length).toBeGreaterThan(0)
+	})
+
+	test('checkSchema errors render through the re-exported renderCompact', () => {
+		const { errors } = checkSchema(schema, {})
+		expect(renderCompact(errors)).toContain('name')
+	})
+
+	test('createChecker builds a reusable checker and forwards options (coerceTypes)', () => {
+		const check = createChecker(defineSchema({ port: number() }), { coerceTypes: true })
+		expect(check({ port: '4040' })).toEqual({ valid: true, errors: [] })
 	})
 })
