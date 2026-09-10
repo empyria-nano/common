@@ -7,8 +7,15 @@ import {
 	cloneBySchema,
 	defineSchema,
 	validate,
+	parse,
+	createParser,
+	createValidator,
 	createChecker,
 	checkSchema,
+	schemaOptions,
+	setAtaDefaults,
+	getAtaDefaults,
+	EMPYRIA_FORMATS,
 	bool,
 	string,
 	enumType,
@@ -88,6 +95,31 @@ describe('defineSchema', () => {
 
 	test('disallows extra properties when strict', () => {
 		expect(defineSchema({ a: string() }, { strict: true }).additionalProperties).toBe(false)
+	})
+
+	test('an explicit additionalProperties overrides strict', () => {
+		expect(
+			defineSchema({ a: string() }, { strict: true, additionalProperties: true })
+				.additionalProperties,
+		).toBe(true)
+		expect(
+			defineSchema({ a: string() }, { additionalProperties: false }).additionalProperties,
+		).toBe(false)
+	})
+
+	test('binds validation options on a non-enumerable key, invisible to JSON/toEqual', () => {
+		const schema = defineSchema(
+			{ a: string() },
+			{ validation: { coerceTypes: true, removeAdditional: true } },
+		)
+		expect(schema).toEqual({
+			type: 'object',
+			properties: { a: { type: 'string' } },
+			required: ['a'],
+			additionalProperties: true,
+		})
+		expect(JSON.stringify(schema)).not.toContain('coerceTypes')
+		expect(schemaOptions(schema)).toEqual({ coerceTypes: true, removeAdditional: true })
 	})
 })
 
@@ -171,11 +203,11 @@ describe('schema builders', () => {
 		})
 	})
 
-	test('email/password/ip4/ip6 reference their patterns', () => {
-		expect(email().pattern).toBe(P_EMAIL)
-		expect(password().pattern).toBe(P_PASS)
-		expect(ip4().pattern).toBe(P_IPv4)
-		expect(ip6().pattern).toBe(P_IPv6)
+	test('email/password/ip4/ip6 reference their named formats', () => {
+		expect(email().format).toBe('empyria-email')
+		expect(password().format).toBe('empyria-password')
+		expect(ip4().format).toBe('empyria-ipv4')
+		expect(ip6().format).toBe('empyria-ipv6')
 	})
 })
 
@@ -189,8 +221,16 @@ describe('renderCompact / renderJSON re-exports', () => {
 describe('createChecker / checkSchema', () => {
 	const schema = defineSchema({ name: string() })
 
-	test('checkSchema returns valid:true and no errors for good input', () => {
-		expect(checkSchema(schema, { name: 'Bob' })).toEqual({ valid: true, errors: [] })
+	test('checkSchema returns valid:true, the parsed value, and no errors for good input', () => {
+		expect(checkSchema(schema, { name: 'Bob' })).toEqual({
+			valid: true,
+			data: { name: 'Bob' },
+			errors: [],
+		})
+	})
+
+	test('checkSchema reports data:undefined for bad input', () => {
+		expect(checkSchema(schema, {}).data).toBeUndefined()
 	})
 
 	test('checkSchema returns valid:false and a non-empty error list for bad input, without throwing', () => {
@@ -205,8 +245,87 @@ describe('createChecker / checkSchema', () => {
 		expect(renderCompact(errors)).toContain('name')
 	})
 
-	test('createChecker builds a reusable checker and forwards options (coerceTypes)', () => {
+	test('createChecker builds a reusable checker, forwards options, and returns the parsed value', () => {
 		const check = createChecker(defineSchema({ port: number() }), { coerceTypes: true })
-		expect(check({ port: '4040' })).toEqual({ valid: true, errors: [] })
+		expect(check({ port: '4040' })).toEqual({ valid: true, data: { port: 4040 }, errors: [] })
+	})
+})
+
+describe('named formats', () => {
+	test('EMPYRIA_FORMATS enforce their patterns', () => {
+		expect(EMPYRIA_FORMATS['empyria-email']('user@example.com')).toBe(true)
+		expect(EMPYRIA_FORMATS['empyria-email']('user@example!com')).toBe(false)
+		expect(EMPYRIA_FORMATS['empyria-password']('Abcdefg1')).toBe(true)
+		expect(EMPYRIA_FORMATS['empyria-password']('Abcdefgh')).toBe(false)
+		expect(EMPYRIA_FORMATS['empyria-ipv4']('192.168.0.1')).toBe(true)
+		expect(EMPYRIA_FORMATS['empyria-ipv4']('999.0.0.1')).toBe(false)
+	})
+
+	test('a schema from email() is enforced through this module without per-call wiring', () => {
+		const schema = defineSchema({ addr: email() })
+		expect(validate(schema, { addr: 'user@example.com' })).toEqual({ addr: 'user@example.com' })
+		expect(() => validate(schema, { addr: 'nope' })).toThrow(EmpyriaError)
+	})
+
+	test('a schema from password() is enforced (no ata-validator built-in for it)', () => {
+		const schema = defineSchema({ pw: password() })
+		expect(() => validate(schema, { pw: 'weak' })).toThrow(EmpyriaError)
+		expect(validate(schema, { pw: 'Abcdefg1' })).toEqual({ pw: 'Abcdefg1' })
+	})
+
+	test('a per-call formats entry overrides the Empyria default', () => {
+		const schema = defineSchema({ addr: email() })
+		const only = { formats: { 'empyria-email': (s) => s === 'ok@ok.io' } }
+		expect(validate(schema, { addr: 'ok@ok.io' }, only)).toEqual({ addr: 'ok@ok.io' })
+		expect(() => validate(schema, { addr: 'user@example.com' }, only)).toThrow(EmpyriaError)
+	})
+})
+
+describe('option layering: setAtaDefaults / schema-bound / per-call', () => {
+	test('getAtaDefaults starts empty', () => {
+		expect(getAtaDefaults()).toEqual({})
+	})
+
+	test('a library default is applied when no per-call option is given', () => {
+		const schema = defineSchema({ port: number() })
+		expect(() => validate(schema, { port: '8080' })).toThrow(EmpyriaError)
+		setAtaDefaults({ coerceTypes: true })
+		try {
+			expect(validate(schema, { port: '8080' })).toEqual({ port: 8080 })
+		} finally {
+			setAtaDefaults()
+		}
+		expect(getAtaDefaults()).toEqual({})
+	})
+
+	test('schema-bound validation options beat library defaults, per-call beats both', () => {
+		setAtaDefaults({ coerceTypes: false })
+		try {
+			const bound = defineSchema({ port: number() }, { validation: { coerceTypes: true } })
+			// schema-bound coerceTypes:true wins over the library default
+			expect(validate(bound, { port: '80' })).toEqual({ port: 80 })
+			// per-call coerceTypes:false wins over the schema-bound value
+			expect(() => validate(bound, { port: '80' }, { coerceTypes: false })).toThrow(
+				EmpyriaError,
+			)
+		} finally {
+			setAtaDefaults()
+		}
+	})
+})
+
+describe('parse / createParser', () => {
+	test('parse coerces and strips against a closed schema', () => {
+		const schema = defineSchema(
+			{ port: number() },
+			{ strict: true, validation: { coerceTypes: true, removeAdditional: true } },
+		)
+		expect(parse(schema, { port: '3000', stray: 'x' })).toEqual({ port: 3000 })
+	})
+
+	test('createParser is a reusable createValidator under an intent-revealing name', () => {
+		const p = createParser(defineSchema({ n: number() }), { coerceTypes: true })
+		expect(p({ n: '7' })).toEqual({ n: 7 })
+		expect(typeof createValidator).toBe('function')
 	})
 })
