@@ -15,6 +15,9 @@ import {
 	schemaOptions,
 	setAtaDefaults,
 	getAtaDefaults,
+	setDefaultDialect,
+	getDefaultDialect,
+	DIALECTS,
 	EMPYRIA_FORMATS,
 	bool,
 	string,
@@ -24,6 +27,17 @@ import {
 	logFile,
 	nodeEnv,
 	number,
+	integer,
+	constant,
+	nullable,
+	array,
+	discriminated,
+	isoDateTime,
+	isoDate,
+	isoTime,
+	duration,
+	uri,
+	uuid,
 	email,
 	password,
 	ip4,
@@ -327,5 +341,147 @@ describe('parse / createParser', () => {
 		const p = createParser(defineSchema({ n: number() }), { coerceTypes: true })
 		expect(p({ n: '7' })).toEqual({ n: 7 })
 		expect(typeof createValidator).toBe('function')
+	})
+})
+
+describe('scalar builders — constraints', () => {
+	test('string accepts a number shorthand or an options object', () => {
+		expect(string('x', 3)).toEqual({ type: 'string', default: 'x', minLength: 3 })
+		expect(
+			string(undefined, { minLength: 0, maxLength: 8, pattern: '^a', format: 'uri' }),
+		).toEqual({
+			type: 'string',
+			minLength: 0,
+			maxLength: 8,
+			pattern: '^a',
+			format: 'uri',
+		})
+	})
+
+	test('number/integer carry bounds; integer types as integer', () => {
+		expect(number(5)).toEqual({ type: 'number', default: 5 })
+		expect(integer(8100, { min: 1, max: 65535 })).toEqual({
+			type: 'integer',
+			default: 8100,
+			minimum: 1,
+			maximum: 65535,
+		})
+		expect(integer(undefined, { exclusiveMin: 0, multipleOf: 2 })).toEqual({
+			type: 'integer',
+			exclusiveMinimum: 0,
+			multipleOf: 2,
+		})
+	})
+
+	test('an integer schema rejects a real (and, coerced, a non-integer string)', () => {
+		const schema = defineSchema({ port: integer() })
+		expect(() => validate(schema, { port: 3.5 })).toThrow(EmpyriaError)
+		expect(() => validate(schema, { port: '3.5' }, { coerceTypes: true })).toThrow(EmpyriaError)
+		expect(validate(schema, { port: '3000' }, { coerceTypes: true })).toEqual({ port: 3000 })
+	})
+
+	test('enumType can carry a type alongside enum', () => {
+		expect(enumType(['a', 'b'], 'a')).toEqual({ enum: ['a', 'b'], default: 'a' })
+		expect(enumType(['a', 'b'], undefined, { type: 'string' })).toEqual({
+			type: 'string',
+			enum: ['a', 'b'],
+		})
+	})
+
+	test('constant / nullable', () => {
+		expect(constant('circle')).toEqual({ const: 'circle' })
+		expect(nullable(string('x'))).toEqual({ type: ['string', 'null'], default: 'x' })
+		expect(nullable(enumType(['a']))).toEqual({ anyOf: [{ enum: ['a'] }, { type: 'null' }] })
+		const schema = defineSchema({ note: nullable(string()) })
+		expect(validate(schema, { note: null })).toEqual({ note: null })
+		expect(validate(schema, { note: 'hi' })).toEqual({ note: 'hi' })
+		expect(() => validate(schema, { note: 3 })).toThrow(EmpyriaError)
+	})
+
+	test('array builder', () => {
+		expect(array(string(), { minItems: 1, uniqueItems: true })).toEqual({
+			type: 'array',
+			items: { type: 'string' },
+			minItems: 1,
+			uniqueItems: true,
+		})
+		const schema = defineSchema({ tags: array(string()) })
+		expect(validate(schema, { tags: ['a', 'b'] })).toEqual({ tags: ['a', 'b'] })
+		expect(() => validate(schema, { tags: ['a', 2] })).toThrow(EmpyriaError)
+	})
+
+	test('format wrappers', () => {
+		expect(isoDateTime()).toEqual({
+			type: 'string',
+			format: 'date-time',
+			description: expect.any(String),
+		})
+		expect([isoDate(), isoTime(), duration(), uri(), uuid()].map((s) => s.format)).toEqual([
+			'date',
+			'time',
+			'duration',
+			'uri',
+			'uuid',
+		])
+		const schema = defineSchema({ at: isoDateTime() })
+		expect(validate(schema, { at: '2026-09-10T09:28:09Z' })).toEqual({
+			at: '2026-09-10T09:28:09Z',
+		})
+		expect(() => validate(schema, { at: 'not-a-date' })).toThrow(EmpyriaError)
+	})
+})
+
+describe('defineSchema — dialect & unevaluated strict', () => {
+	test('dialect stamps $schema from a short name or a raw URI', () => {
+		expect(defineSchema({ a: string() }, { dialect: 'v1' }).$schema).toBe(
+			'https://json-schema.org/v1',
+		)
+		expect(defineSchema({ a: string() }, { dialect: 'https://example.test/s' }).$schema).toBe(
+			'https://example.test/s',
+		)
+		expect(defineSchema({ a: string() }).$schema).toBeUndefined()
+	})
+
+	test('setDefaultDialect applies when a call passes no dialect', () => {
+		expect(getDefaultDialect()).toBeNull()
+		setDefaultDialect('v1')
+		try {
+			expect(defineSchema({ a: string() }).$schema).toBe('https://json-schema.org/v1')
+			expect(defineSchema({ a: string() }, { dialect: '2020-12' }).$schema).toBe(
+				'https://json-schema.org/draft/2020-12/schema',
+			)
+		} finally {
+			setDefaultDialect()
+		}
+		expect(getDefaultDialect()).toBeNull()
+		expect(defineSchema({ a: string() }).$schema).toBeUndefined()
+	})
+
+	test("strict: 'unevaluated' keeps additionalProperties open but sets unevaluatedProperties:false", () => {
+		const schema = defineSchema({ a: string() }, { strict: 'unevaluated' })
+		expect(schema.additionalProperties).toBe(true)
+		expect(schema.unevaluatedProperties).toBe(false)
+	})
+})
+
+describe('discriminated (propertyDependencies)', () => {
+	const shape = discriminated('kind', {
+		circle: defineSchema({ radius: number() }),
+		square: defineSchema({ side: number() }),
+	})
+
+	test('selects the branch by the discriminator value', () => {
+		expect(validate(shape, { kind: 'circle', radius: 2 })).toEqual({
+			kind: 'circle',
+			radius: 2,
+		})
+		expect(validate(shape, { kind: 'square', side: 3 })).toEqual({ kind: 'square', side: 3 })
+		expect(() => validate(shape, { kind: 'circle', side: 3 })).toThrow(EmpyriaError)
+		expect(() => validate(shape, { kind: 'triangle' })).toThrow(EmpyriaError)
+	})
+
+	test('pairs with a v1 $schema via dialect', () => {
+		const v1shape = { ...shape, $schema: DIALECTS.v1 }
+		expect(validate(v1shape, { kind: 'square', side: 3 })).toEqual({ kind: 'square', side: 3 })
 	})
 })

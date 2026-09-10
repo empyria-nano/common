@@ -1,6 +1,6 @@
 {
 	"name": "@empyria/common",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Shared backend goodies for Empyria",
 	"license": "MIT",
 	"author": "Imre Fazekas <imre.fazekas@icloud.com>",
