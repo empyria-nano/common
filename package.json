@@ -1,6 +1,6 @@
 {
 	"name": "@empyria/common",
-	"version": "0.3.6",
+	"version": "0.3.7",
 	"description": "Shared backend goodies for Empyria",
 	"license": "MIT",
 	"author": "Imre Fazekas <imre.fazekas@icloud.com>",
@@ -19,14 +19,14 @@
 		"test:watch": "bun test --watch"
 	},
 	"dependencies": {
-		"@empyria/classification": "0.1.8",
-		"ata-validator": "1.32.1",
+		"@empyria/classification": "0.1.9",
+		"ata-validator": "1.38.0",
 		"clerobee": "1.0.8",
 		"ms": "2.1.3"
 	},
 	"devDependencies": {
-		"oxfmt": "0.70.0",
-		"oxlint": "1.85.0"
+		"oxfmt": "0.71.0",
+		"oxlint": "1.86.0"
 	},
 	"engines": {
 		"bun": ">=1.4.2",
