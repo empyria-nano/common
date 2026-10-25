@@ -1,6 +1,6 @@
 {
 	"name": "@empyria/common",
-	"version": "0.3.15",
+	"version": "0.3.16",
 	"description": "Shared backend goodies for Empyria",
 	"license": "MIT",
 	"author": "Imre Fazekas <imre.fazekas@icloud.com>",
@@ -19,8 +19,8 @@
 		"test:watch": "bun test --watch"
 	},
 	"dependencies": {
-		"@empyria/classification": "0.1.12",
-		"ata-validator": "1.58.1",
+		"@empyria/classification": "0.1.13",
+		"ata-validator": "1.60.0",
 		"clerobee": "1.0.8",
 		"ms": "2.1.3"
 	},
